@@ -1,5 +1,7 @@
 ﻿module Oware
 
+//
+
 
 //There are two players in the game, either can start in position north or south
 type StartingPosition =
@@ -81,57 +83,14 @@ let gameState board =
     |NorthWon -> "North won" 
 
 
-//function to turn the board from n to s
-
-let useHouse n board = // failwith "Game is in neutral"
-//fuction to check if the house is zero
-    let {player1 = P1 ; player2 = P2} = board
-    let (a,b,c,d,e,f) = P1.house
-    let (a',b',c',d',e',f') = P2.house
-    match n with
-
-    |1 -> {board.player1 with house = 0,b,c,d,e,f}
-    |2 -> {board.player1 with house = a,0,c,d,e,f}
-    |3 -> {board.player1 with house = a,b,0,d,e,f}
-    |4 -> {board.player1 with house = a,b,c,0,e,f}
-    |5 -> {board.player1 with house = a,b,c,d,0,f}
-    |6 -> {board.player1 with house = a,b,c,d,e,0}
-    |7 -> {board.player2 with house = 0,b',c',d',e',f'}
-    |8 -> {board.player2 with house = a',0,c',d',e',f'}
-    |9 -> {board.player2 with house = a',b',0,d',e',f'}
-    |10 -> {board.player2 with house = a',b',c',0,e',f'}
-    |11 -> {board.player2 with house = a',b',c',d',0,f'}
-    |12 -> {board.player2 with house = a',b',c',d',e',0}
+//function to turn the board from n to 
 
 let useHouse n board = 
     let {player1 = P1 ; player2 = P2} = board
-    let (seednum, housenum)= getSeeds n board, n
-    let rec addValue board house=
-        match seednum= 0 with
-        |true ->
-            match (seednum,housenum) with
-            |1 -> addValue (a+1,b,c,d,e,f,a',b',c',d',e',f') (seednum - 1) (housenum + 1)
-            |2 -> addValue(a,b+1,c,d,e,f,a',b',c',d',e',f') (seednum - 1) (housenum + 1)
-            |3 -> addValue(a,b,c+1,d,e,f,a',b',c',d',e',f') (seednum - 1) (housenum + 1)
-            |4 -> addValue(a,b,c,d+1,e,f,a',b',c',d',e',f') (seednum - 1) (housenum + 1)
-            |5 -> addValue(a,b,c,d,e+1,f,a',b',c',d',e',f') (seednum - 1) (housenum + 1)
-            |6 -> addValue(a,b,c,d,e,f+1,a',b',c',d',e',f') (seednum - 1) (housenum + 1)
-            |7 -> addValue(a,b,c,d,e,f,a'+ 1,b',c',d',e',f')(seednum - 1) (housenum + 1)
-            |8 -> addValue(a,b,c,d,e,f,a',b'+1,c',d',e',f')(seednum - 1) (housenum + 1)
-            |9 -> addValue(a,b,c,d,e,f,a',b',c'+1,d',e',f')(seednum - 1) (housenum + 1)
-            |10 -> addValue(a,b,c,d,e,f,a',b',c',d'+1,e',f')(seednum - 1) (housenum + 1)
-            |11 -> addValue(a,b,c,d,e,f,a',b',c',d',e'+1,f') (seednum - 1) (housenum + 1)
-            |12 -> addValue(a,b,c,d,e,f,a',b',c',d',e',f'+1)(seednum - 1) (housenum + 1)
-        |_ -> board
-    addValue 0 board
-
-
-    let {player1 = P1 ; player2 = P2} = board
     let (a,b,c,d,e,f) = P1.house
     let (a',b',c',d',e',f') = P2.house
-   (* let rec sow P1.house P2.house =
-    match n with
-    |true -> sow (P1.house + 1) (P2.house) *)
+
+    let selecthousezero = 
     match n with
 //failwith "Game is in neutral
     |1 -> {board with player1 = {board.player1 with house = 0,b,c,d,e,f}}
@@ -164,6 +123,25 @@ let updatehouse n (a,b,c,d,e,f, a',b',c',d',e',f')=
     |12 -> a,b,c,d,e,f,a',b',c',d',e',(f'+1)
     |_ -> failwith "Game is in neutral" 
     
+    let seednum = getSeeds n board
+
+    match seednum  with
+    |0 -> board 
+    |_ -> 
+    let (a,b,c,d,e,f) = (selectedhousezero n board ).player1.house
+    let (a,b,c,d,e,f) = (selectedhousezero n board ).player2.house
+    let newboard =(a,b,c,d,e,f, a',b',c',d',e',f')
+    let rec move numhouse seed sum =
+    let p = 
+            match numhouse with
+            |13 -> 1
+            |_ -> numhouse
+    match seed<>0 with
+    |false -> numhouse
+    |_ ->    match p = sum with
+                |true -> move (p+1) seed numhouse sum
+                |_ -> move (p+1) (seed -1) updatehouse (n numhouse) sum
+    let (a,b,c,d,e,f, a',b',c',d',e',f') = move (numhouse + 1) seednum newboard n
 
 //The method removes seeds from a given house (Method 1)
 let Collecting n board =
@@ -202,6 +180,12 @@ let Collecting n board =
         |_ ->{board.player2 with house = P2.house}
     
     
+let nexthouse num =
+      match (num+1)>12 with
+      |true ->1
+      |_-> (num+1)
+      
+ 
  // Method 1
 
  //Makin a move with the sow methos (function 2)
@@ -240,8 +224,7 @@ let sow n board = //
     match numseeds>0 with
     |false ->{board.player2 with house=(a',b',c',d',e',f')}
     |_-> distri ((a,b,c,d,e,f,a',b',c',d',e',f')) numseeds n
-let useHouse n board=
-    fun collecting n board -> sow n board
+ 
 
 //function to check whose turn it is
 let turn n player = 
