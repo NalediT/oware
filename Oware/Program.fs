@@ -83,14 +83,11 @@ let gameState board =
     |NorthWon -> "North won" 
 
 
-//function to turn the board from n to 
-
-let useHouse n board = 
+//function to turn the board from n to
+let selectedhousezero n board = 
     let {player1 = P1 ; player2 = P2} = board
     let (a,b,c,d,e,f) = P1.house
     let (a',b',c',d',e',f') = P2.house
-
-    let selecthousezero = 
     match n with
 //failwith "Game is in neutral
     |1 -> {board with player1 = {board.player1 with house = 0,b,c,d,e,f}}
@@ -123,25 +120,42 @@ let updatehouse n (a,b,c,d,e,f, a',b',c',d',e',f')=
     |12 -> a,b,c,d,e,f,a',b',c',d',e',(f'+1)
     |_ -> failwith "Game is in neutral" 
     
+    //function to check whose turn it is
+let turn n player = 
+    match player with
+    |SouthTurn ->    match n with
+                    |1|2|3|4|5|6 -> true
+                    |_ ->   NorthTurn  
+                            match n with
+                            |7|8|9|10|11|12 -> true
+                            |_ -> failwith "Game is in neutral"
+let useHouse n board = 
     let seednum = getSeeds n board
-
+    match board.gameState with
+    |true -> board
+    |_ -> 
     match seednum  with
     |0 -> board 
     |_ -> 
+    //match phase
     let (a,b,c,d,e,f) = (selectedhousezero n board ).player1.house
-    let (a,b,c,d,e,f) = (selectedhousezero n board ).player2.house
-    let newboard =(a,b,c,d,e,f, a',b',c',d',e',f')
-    let rec move numhouse seed sum =
-    let p = 
-            match numhouse with
-            |13 -> 1
-            |_ -> numhouse
-    match seed<>0 with
-    |false -> numhouse
-    |_ ->    match p = sum with
-                |true -> move (p+1) seed numhouse sum
-                |_ -> move (p+1) (seed -1) updatehouse (n numhouse) sum
-    let (a,b,c,d,e,f, a',b',c',d',e',f') = move (numhouse + 1) seednum newboard n
+    let (a',b',c',d',e',f') = (selectedhousezero n board ).player2.house
+    
+    let newboard = (a,b,c,d,e,f, a',b',c',d',e',f')
+
+    let rec move n seed nb numhouse  =
+        let p = // put seeds in p
+                match n with
+                |13 -> 1 
+                |_ -> n
+        match seed<>0 with
+        |false -> {board with player1 = {board.player1 with house = 0,b,c,d,e,f}} // return board with player1 and 2 split newboard 
+        |_ ->    match p = numhouse with
+                    |true ->    move (p+1) seed nb numhouse 
+                    |_ ->   move (p+1) (seed-1) (updatehouse p nb) numhouse
+    move (n + 1) seednum newboard n
+    //currenthousenum seedenum board orighouse
+    
 
 //The method removes seeds from a given house (Method 1)
 let Collecting n board =
@@ -226,15 +240,7 @@ let sow n board = //
     |_-> distri ((a,b,c,d,e,f,a',b',c',d',e',f')) numseeds n
  
 
-//function to check whose turn it is
-let turn n player = 
-    match player with
-    |SouthTurn ->    match n with
-                    |1|2|3|4|5|6 -> true
-                    |_ ->   NorthTurn  
-                            match n with
-                            |7|8|9|10|11|12 -> true
-                            |_ -> failwith "Game is in neutral"
+
 
    
 [<EntryPoint>]
